@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from skimage.filters import threshold_otsu
 from matplotlib import pyplot as plt
+from processors import AdaptiveThresholder
 from sklearn.cluster import KMeans
 from itertools import combinations
 from collections import defaultdict
@@ -71,11 +71,12 @@ class PageExtractor:
         # compute the perspective transform matrix and then apply it
         M = cv2.getPerspectiveTransform(rect, dst)
         warped = cv2.warpPerspective(self._processed, M, (maxWidth, maxHeight))
+        # cv2.imwrite('output/deskewed.jpg', warped)
 
         if self.output_process: cv2.imwrite('output/deskewed.jpg', warped)
 
         # return the warped image
-        return warped
+        return rect, dst, maxWidth, maxHeight
 
     
     def _order_points(self, pts):
@@ -116,7 +117,7 @@ class PageExtractor:
 if __name__ == "__main__":
     import argparse
     from hough_line_corner_detector import HoughLineCornerDetector
-    from processors import Resizer, OtsuThresholder, FastDenoiser
+    from processors import Resizer, OtsuThresholder, FastDenoiser, AdaptiveThresholder
 
     parser = argparse.ArgumentParser(description="Python script to detect and extract documents.")
 
@@ -128,20 +129,26 @@ if __name__ == "__main__":
         dest = 'input_image'
     )
 
+    
     page_extractor = PageExtractor(
         preprocessors = [
             Resizer(height = 1280, output_process = True), 
-            FastDenoiser(strength = 9, output_process = True),
-            OtsuThresholder(output_process = True)
+            FastDenoiser(strength = 1, output_process = True),
+            # OtsuThresholder(thresh1 = 30, thresh2 = 200, output_process = True)
+            # AdaptiveThresholder(thresh=255, output_process = True)
         ],
         corner_detector = HoughLineCornerDetector(
             rho_acc = 1,
             theta_acc = 180,
-            thresh = 100,
+            thresh = 95,
             output_process = True
         )
     )
     args = parser.parse_args()
-    extracted = page_extractor(args.input_image)
+    rect, dst, extracted = page_extractor(args.input_image)
+    print(rect)
     cv2.imshow("Extracted page", extracted)
     cv2.waitKey(0)
+
+    # Erode after convert2gray [diff] convert2gray after Erode
+    # Xu ly anh chup tran vien (Xu ly anh cho cac duong vien: duplicate, diff, truot dai)

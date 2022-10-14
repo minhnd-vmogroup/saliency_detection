@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from processors import Opener, Closer, EdgeDetector
 from sklearn.cluster import KMeans
 from itertools import combinations
+from processors import OtsuThresholder
 
 
 class HoughLineCornerDetector:
@@ -14,8 +15,9 @@ class HoughLineCornerDetector:
         self.thresh = thresh
         self.output_process = output_process
         self._preprocessor = [
-            Closer(output_process = output_process), 
-            EdgeDetector(output_process = output_process)
+            # Closer(output_process = output_process), 
+            # OtsuThresholder(thresh1 = 0, thresh2 = 255, output_process = True),
+            EdgeDetector( output_process = output_process)
         ]
 
     
@@ -59,7 +61,7 @@ class HoughLineCornerDetector:
             y1 = int(y0 + n * (a))
             x2 = int(x0 - n * (-b))
             y2 = int(y0 - n * (a))
-
+            # print((x1,y1), (x2,y2))
             cv2.line(
                 hough_line_output, 
                 (x1, y1), 

@@ -3,3 +3,6 @@
 test.ipynb
 hough_line_corner_detector_2.py
 .vscode
+input/
+output/
+saved_models/

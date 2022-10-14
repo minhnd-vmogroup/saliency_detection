@@ -79,7 +79,7 @@ class OtsuThresholder:
     -------
     Thresholded image
     """
-    def __init__(self, thresh1 = 0, thresh2 = 255, output_process = False):
+    def __init__(self, thresh1 = 0, thresh2 = 225, output_process = False):
         self.output_process = output_process
         self.thresh1 = thresh1
         self.thresh2 = thresh2
@@ -87,8 +87,21 @@ class OtsuThresholder:
 
     def __call__(self, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        T_, thresholded = cv2.threshold(image, self.thresh1, self.thresh2, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        thresholded = cv2.GaussianBlur(image, (5, 5), 0)
+        # T_, thresholded = cv2.threshold(image, self.thresh1, self.thresh2, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # thresholded = cv2.adaptiveThreshold(image, self.thresh2, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
         if self.output_process: cv2.imwrite('output/thresholded.jpg', thresholded)
+        return thresholded
+
+class AdaptiveThresholder:
+    def __init__(self,thresh = 255, output_process = False):
+        self.output_process = output_process
+        self.thresh = thresh
+    
+    def __call__(self, image):
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        thresholded = cv2.adaptiveThreshold(image, self.thresh, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
+        if self.output_process: cv2.imwrite('output/adaptivethresholded.jpg', thresholded)
         return thresholded
 
 
@@ -166,7 +179,7 @@ class EdgeDetector:
         self.output_process = output_process
 
 
-    def __call__(self, image, thresh1 = 50, thresh2 = 150, apertureSize = 3):
+    def __call__(self, image, thresh1 = 4, thresh2 = 150, apertureSize = 3):
         edges = cv2.Canny(image, thresh1, thresh2, apertureSize = apertureSize)
         if self.output_process: cv2.imwrite('output/edges.jpg', edges)
         return edges
